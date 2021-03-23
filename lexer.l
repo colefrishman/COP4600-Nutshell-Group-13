@@ -6,14 +6,13 @@
 %x EXPECT_STRING
 
 DIGIT	[0-9]
-META	[\[\]{},:]
+META	[\<\>\|\"\\\&]
 
 %%
 
 [ \t\r\n]+	{ /* Whitespace - ignore */ }
 
-{DIGIT}+					return INTEGER_LITERAL;
-null						return NULL_LITERAL;
+[a-z]+						return WORD;
 
 	/*
 	This one's a bit weird - instead of defining a lot of different tokens

@@ -1,5 +1,8 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define YYSTYPE char*
 
 int yylex(); // Defined in lex.yy.c
 
@@ -10,7 +13,7 @@ void yyerror(char* e) {
 }
 %}
 
-%token INTEGER_LITERAL NULL_LITERAL
+%token WORD META
 %token UNDEFINED
 
 %%
@@ -21,13 +24,9 @@ void yyerror(char* e) {
 	*/
 input:
 	  %empty
-	| input object { printf("int"); } ;
+	| input command { printf($2);
+	} ;
 
-object:
-		INTEGER_LITERAL
-	| NULL_LITERAL ;
+command:
+	WORD;
 
-	/*
-	A comma-separated list. Three different patterns here now, to represent
-	lists with no items, one item, or multiple items.
-	*/
