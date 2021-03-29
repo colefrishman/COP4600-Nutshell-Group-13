@@ -1,5 +1,6 @@
 #pragma once
 
 enum token_type{
-    INTEGER = 1
+    WORD = 1,
+    NEWLINE
 };

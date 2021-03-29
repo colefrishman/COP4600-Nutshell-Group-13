@@ -56,14 +56,25 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     WORD = 258,                    /* WORD  */
     META = 259,                    /* META  */
-    UNDEFINED = 260                /* UNDEFINED  */
+    NEWLINE = 260,                 /* NEWLINE  */
+    CD = 261,                      /* CD  */
+    UNDEFINED = 262                /* UNDEFINED  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 21 "parser.y"
+
+    char *string;
+
+#line 75 "parser.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

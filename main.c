@@ -6,3 +6,5 @@ int main() {
 		yyparse();
 	}
 }
+
+	/*WORD NEWLINE	{ printf("%s",$1); return 1;};*/
