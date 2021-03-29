@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "parser.y"
+#line 1 "nutshparser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,7 +87,7 @@ void yyerror(char* e) {
 int run_cd();
 int run_word(char* w);
 
-#line 91 "parser.tab.c"
+#line 91 "nutshparser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -110,7 +110,7 @@ int run_word(char* w);
 #  endif
 # endif
 
-#include "parser.tab.h"
+#include "nutshparser.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -1075,19 +1075,19 @@ yyreduce:
   switch (yyn)
     {
   case 3: /* input: WORD NEWLINE  */
-#line 36 "parser.y"
+#line 36 "nutshparser.y"
                    {run_word((yyvsp[-1].string));}
-#line 1081 "parser.tab.c"
+#line 1081 "nutshparser.tab.c"
     break;
 
   case 4: /* input: CD NEWLINE  */
-#line 37 "parser.y"
+#line 37 "nutshparser.y"
                      {run_cd();}
-#line 1087 "parser.tab.c"
+#line 1087 "nutshparser.tab.c"
     break;
 
 
-#line 1091 "parser.tab.c"
+#line 1091 "nutshparser.tab.c"
 
       default: break;
     }
@@ -1281,7 +1281,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 39 "parser.y"
+#line 39 "nutshparser.y"
 
 
 int run_cd(){
