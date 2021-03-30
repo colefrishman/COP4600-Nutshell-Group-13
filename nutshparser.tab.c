@@ -87,8 +87,10 @@ void yyerror(char* e) {
 int run_cd();
 int run_word(char* w);
 int run_printenv();
+int run_setenv(char* var, char* val);
+int run_unsetenv(char* var);
 
-#line 92 "nutshparser.tab.c"
+#line 94 "nutshparser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -124,9 +126,14 @@ enum yysymbol_kind_t
   YYSYMBOL_NEWLINE = 5,                    /* NEWLINE  */
   YYSYMBOL_CD = 6,                         /* CD  */
   YYSYMBOL_PRINTENV = 7,                   /* PRINTENV  */
-  YYSYMBOL_UNDEFINED = 8,                  /* UNDEFINED  */
-  YYSYMBOL_YYACCEPT = 9,                   /* $accept  */
-  YYSYMBOL_input = 10                      /* input  */
+  YYSYMBOL_SETENV = 8,                     /* SETENV  */
+  YYSYMBOL_WHITESPACE = 9,                 /* WHITESPACE  */
+  YYSYMBOL_UNSETENV = 10,                  /* UNSETENV  */
+  YYSYMBOL_ALIAS = 11,                     /* ALIAS  */
+  YYSYMBOL_UNALIAS = 12,                   /* UNALIAS  */
+  YYSYMBOL_UNDEFINED = 13,                 /* UNDEFINED  */
+  YYSYMBOL_YYACCEPT = 14,                  /* $accept  */
+  YYSYMBOL_input = 15                      /* input  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -446,21 +453,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  8
+#define YYFINAL  12
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   6
+#define YYLAST   18
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  9
+#define YYNTOKENS  14
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  2
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  5
+#define YYNRULES  7
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  9
+#define YYNSTATES  19
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   263
+#define YYMAXUTOK   268
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -500,14 +507,14 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8
+       5,     6,     7,     8,     9,    10,    11,    12,    13
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    36,    36,    37,    38,    39
+       0,    38,    38,    39,    40,    41,    42,    43
 };
 #endif
 
@@ -524,7 +531,8 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 static const char *const yytname[] =
 {
   "\"end of file\"", "error", "\"invalid token\"", "WORD", "META",
-  "NEWLINE", "CD", "PRINTENV", "UNDEFINED", "$accept", "input", YY_NULLPTR
+  "NEWLINE", "CD", "PRINTENV", "SETENV", "WHITESPACE", "UNSETENV", "ALIAS",
+  "UNALIAS", "UNDEFINED", "$accept", "input", YY_NULLPTR
 };
 
 static const char *
@@ -539,11 +547,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    (internal) symbol number NUM (which must be that of a token).  */
 static const yytype_int16 yytoknum[] =
 {
-       0,   256,   257,   258,   259,   260,   261,   262,   263
+       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
+     265,   266,   267,   268
 };
 #endif
 
-#define YYPACT_NINF (-5)
+#define YYPACT_NINF (-8)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -557,7 +566,8 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -3,    -4,     0,     1,     2,    -5,    -5,    -5,    -5
+      -3,    -4,     1,     3,    -7,     0,    10,    -8,    -8,    -8,
+       8,     9,    -8,     4,    11,    12,    -8,    13,    -8
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -565,19 +575,20 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       2,     0,     0,     0,     0,     4,     5,     3,     1
+       2,     0,     0,     0,     0,     0,     0,     6,     7,     5,
+       0,     0,     1,     0,     0,     0,     4,     0,     3
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -5,    -5
+      -8,    -8
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     4
+       0,     6
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -585,31 +596,34 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-       1,     5,     8,     2,     3,     6,     7
+       1,     7,    10,     2,     3,     4,     8,     5,     9,    11,
+      12,    13,    14,    15,     0,    17,    16,     0,    18
 };
 
 static const yytype_int8 yycheck[] =
 {
-       3,     5,     0,     6,     7,     5,     5
+       3,     5,     9,     6,     7,     8,     5,    10,     5,     9,
+       0,     3,     3,     9,    -1,     3,     5,    -1,     5
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     3,     6,     7,    10,     5,     5,     5,     0
+       0,     3,     6,     7,     8,    10,    15,     5,     5,     5,
+       9,     9,     0,     3,     3,     9,     5,     3,     5
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,     9,    10,    10,    10,    10
+       0,    14,    15,    15,    15,    15,    15,    15
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     0,     2,     2,     2
+       0,     2,     0,     6,     4,     2,     2,     2
 };
 
 
@@ -1076,26 +1090,38 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 3: /* input: PRINTENV NEWLINE  */
-#line 37 "nutshparser.y"
-                       {run_printenv();}
-#line 1083 "nutshparser.tab.c"
-    break;
-
-  case 4: /* input: WORD NEWLINE  */
-#line 38 "nutshparser.y"
-                   {run_word((yyvsp[-1].string));}
-#line 1089 "nutshparser.tab.c"
-    break;
-
-  case 5: /* input: CD NEWLINE  */
+  case 3: /* input: SETENV WHITESPACE WORD WHITESPACE WORD NEWLINE  */
 #line 39 "nutshparser.y"
+                                                         {run_setenv((yyvsp[-3].string), (yyvsp[-1].string));}
+#line 1097 "nutshparser.tab.c"
+    break;
+
+  case 4: /* input: UNSETENV WHITESPACE WORD NEWLINE  */
+#line 40 "nutshparser.y"
+                                           {run_unsetenv((yyvsp[-1].string));}
+#line 1103 "nutshparser.tab.c"
+    break;
+
+  case 5: /* input: PRINTENV NEWLINE  */
+#line 41 "nutshparser.y"
+                       {run_printenv();}
+#line 1109 "nutshparser.tab.c"
+    break;
+
+  case 6: /* input: WORD NEWLINE  */
+#line 42 "nutshparser.y"
+                   {run_word((yyvsp[-1].string));}
+#line 1115 "nutshparser.tab.c"
+    break;
+
+  case 7: /* input: CD NEWLINE  */
+#line 43 "nutshparser.y"
                      {run_cd();}
-#line 1095 "nutshparser.tab.c"
+#line 1121 "nutshparser.tab.c"
     break;
 
 
-#line 1099 "nutshparser.tab.c"
+#line 1125 "nutshparser.tab.c"
 
       default: break;
     }
@@ -1289,7 +1315,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 41 "nutshparser.y"
+#line 45 "nutshparser.y"
 
 
 int run_cd(){
@@ -1306,5 +1332,15 @@ int run_printenv(){
     for (char **v = environ; *v!=nullptr; ++v) {
         printf("%s\n", *v);
     }
+	return 1;
+}
+
+int run_setenv(char* var, char* val){
+	setenv(var, val, 1);
+	return 1;
+}
+
+int run_unsetenv(char* var){
+	unsetenv(var);
 	return 1;
 }

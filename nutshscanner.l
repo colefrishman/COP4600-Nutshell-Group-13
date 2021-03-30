@@ -18,12 +18,16 @@ META	[\<\>\|\"\\\&]
 %%
 
 "\n"	{return NEWLINE;}
+" "		{return WHITESPACE;}
 
-setenv		{return SETENV}
+setenv		{return SETENV;}
 printenv	{return PRINTENV;}
+unsetenv	{return UNSETENV;}
+alias		{return ALIAS;}
+unalias		{return UNALIAS;}
 cd			{return CD;}
 bye			{exit(1); return 0;}
-[a-z]+		{yylval.string = strdup(yytext); return WORD;}
+[a-zA-Z_]+	{yylval.string = strdup(yytext); return WORD;}
 
 	/*
 	This one's a bit weird - instead of defining a lot of different tokens

@@ -17,6 +17,8 @@ void yyerror(char* e) {
 int run_cd();
 int run_word(char* w);
 int run_printenv();
+int run_setenv(char* var, char* val);
+int run_unsetenv(char* var);
 %}
 
 %union {
@@ -24,7 +26,7 @@ int run_printenv();
 }
 
 %start input
-%token <string> WORD META NEWLINE CD PRINTENV
+%token <string> WORD META NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS
 %token UNDEFINED
 
 %%
@@ -34,6 +36,8 @@ int run_printenv();
 	will print "Valid JSON" for each top-level JSON object it finds.
 	*/
 input:	/* empty */
+	| SETENV WHITESPACE WORD WHITESPACE WORD NEWLINE {run_setenv($3, $5);}
+	| UNSETENV WHITESPACE WORD NEWLINE {run_unsetenv($3);}
     | PRINTENV NEWLINE {run_printenv();}
     | WORD NEWLINE {run_word($1);}
 	| CD NEWLINE {run_cd();};
@@ -54,5 +58,15 @@ int run_printenv(){
     for (char **v = environ; *v!=nullptr; ++v) {
         printf("%s\n", *v);
     }
+	return 1;
+}
+
+int run_setenv(char* var, char* val){
+	setenv(var, val, 1);
+	return 1;
+}
+
+int run_unsetenv(char* var){
+	unsetenv(var);
 	return 1;
 }
