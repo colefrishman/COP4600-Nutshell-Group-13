@@ -14,4 +14,4 @@ nutshell:
 	$(GPP) nutshell.cpp nutshparser.tab.c lex.yy.c -o nutshell
 
 clean:
-	rm nutshparser.tab.c nutshparser.tab.h lex.yy.c
+	rm nutshparser.tab.c nutshparser.tab.h lex.yy.c nutshell

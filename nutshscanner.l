@@ -19,6 +19,8 @@ META	[\<\>\|\"\\\&]
 
 "\n"	{return NEWLINE;}
 
+setenv		{return SETENV}
+printenv	{return PRINTENV;}
 cd			{return CD;}
 bye			{exit(1); return 0;}
 [a-z]+		{yylval.string = strdup(yytext); return WORD;}

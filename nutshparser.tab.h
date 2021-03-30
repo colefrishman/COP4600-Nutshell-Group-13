@@ -58,7 +58,8 @@ extern int yydebug;
     META = 259,                    /* META  */
     NEWLINE = 260,                 /* NEWLINE  */
     CD = 261,                      /* CD  */
-    UNDEFINED = 262                /* UNDEFINED  */
+    PRINTENV = 262,                /* PRINTENV  */
+    UNDEFINED = 263                /* UNDEFINED  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -67,11 +68,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 21 "nutshparser.y"
+#line 22 "nutshparser.y"
 
     char *string;
 
-#line 75 "nutshparser.tab.h"
+#line 76 "nutshparser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
