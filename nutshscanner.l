@@ -3,44 +3,29 @@
 #include "nutshparser.tab.h"
 #include <string.h>
 
-#ifdef DOESNT_HAVE_STRDUP
-#warning DOESNT_HAVE_STRDUP
-char *strdup(const char *s);
-#endif
-
 %}
+%array
 %option noyywrap
-%x EXPECT_STRING
+%x string_condition
 
-DIGIT	[0-9]
-META	[\<\>\|\"\\\&]
+CHAR            [.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*
+ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -]*
 
 %%
 
-"\n"	{return NEWLINE;}
-" "		{return WHITESPACE;}
+<string_condition>{ANYCHAR}+     { yylval.string = strdup(yytext); return WORD;}
+<string_condition>[\"]          {BEGIN(INITIAL);}
 
+
+[ ]		    { }
+bye			{exit(1); return 0;}
 setenv		{return SETENV;}
 printenv	{return PRINTENV;}
 unsetenv	{return UNSETENV;}
 alias		{return ALIAS;}
 unalias		{return UNALIAS;}
 cd			{return CD;}
-bye			{exit(1); return 0;}
-[a-zA-Z_]+	{yylval.string = strdup(yytext); return WORD;}
+"\n"		{return NEWLINE;}
+[\"]        { BEGIN(string_condition); }
+{CHAR}+		{yylval.string = strdup(yytext); return WORD;}
 
-	/*
-	This one's a bit weird - instead of defining a lot of different tokens
-	for meta-characters, we can define them all according to their ASCII
-	value. This lets us use single-character literals as tokens in Bison!
-	So what we're doing here is casting the first (and only) character of
-	yytext to an int, and returning that - it gives us the character's ASCII
-	value.
-	*/
-{META}	return (int) yytext[0];
-
-	/*
-	A catch-all that's not used in any parser rules, but gives undefined
-	characters special attention. Not actually necessary.
-	*/
-.		return UNDEFINED;

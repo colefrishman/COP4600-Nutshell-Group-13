@@ -55,16 +55,14 @@ extern int yydebug;
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
     WORD = 258,                    /* WORD  */
-    META = 259,                    /* META  */
-    NEWLINE = 260,                 /* NEWLINE  */
-    CD = 261,                      /* CD  */
-    PRINTENV = 262,                /* PRINTENV  */
-    SETENV = 263,                  /* SETENV  */
-    WHITESPACE = 264,              /* WHITESPACE  */
-    UNSETENV = 265,                /* UNSETENV  */
-    ALIAS = 266,                   /* ALIAS  */
-    UNALIAS = 267,                 /* UNALIAS  */
-    UNDEFINED = 268                /* UNDEFINED  */
+    NEWLINE = 259,                 /* NEWLINE  */
+    CD = 260,                      /* CD  */
+    PRINTENV = 261,                /* PRINTENV  */
+    SETENV = 262,                  /* SETENV  */
+    WHITESPACE = 263,              /* WHITESPACE  */
+    UNSETENV = 264,                /* UNSETENV  */
+    ALIAS = 265,                   /* ALIAS  */
+    UNALIAS = 266                  /* UNALIAS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -73,11 +71,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 24 "nutshparser.y"
+#line 30 "nutshparser.y"
 
     char *string;
 
-#line 81 "nutshparser.tab.h"
+#line 79 "nutshparser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
