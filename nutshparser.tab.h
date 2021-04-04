@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.5.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -31,9 +31,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_NUTSHPARSER_TAB_H_INCLUDED
 # define YY_YY_NUTSHPARSER_TAB_H_INCLUDED
@@ -45,37 +44,32 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    WORD = 258,                    /* WORD  */
-    NEWLINE = 259,                 /* NEWLINE  */
-    CD = 260,                      /* CD  */
-    PRINTENV = 261,                /* PRINTENV  */
-    SETENV = 262,                  /* SETENV  */
-    WHITESPACE = 263,              /* WHITESPACE  */
-    UNSETENV = 264,                /* UNSETENV  */
-    ALIAS = 265,                   /* ALIAS  */
-    UNALIAS = 266                  /* UNALIAS  */
+    WORD = 258,
+    NEWLINE = 259,
+    CD = 260,
+    PRINTENV = 261,
+    SETENV = 262,
+    WHITESPACE = 263,
+    UNSETENV = 264,
+    ALIAS = 265,
+    UNALIAS = 266
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "nutshparser.y"
+#line 32 "nutshparser.y"
 
     char *string;
 
-#line 79 "nutshparser.tab.h"
+#line 73 "nutshparser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

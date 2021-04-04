@@ -6,6 +6,8 @@
 #include <string>
 #include <iostream>
 #include "global.h"
+#include <dirent.h>
+#include <vector>
 
 //#define YYSTYPE char*
 
@@ -58,8 +60,43 @@ int run_cd(char* dir){
 	return 1;
 }
 
-int run_word(char* w){
-	printf("%s\n", w); return 1;
+int run_word(char* w)
+{
+	//printf("%s\n", w); return 1;
+	char s[50] = "/bin/";
+	std::vector<char*> dirFiles;
+	DIR* dir;
+	struct dirent *ent;
+	if ((dir = opendir("/usr/bin")) != nullptr)
+	{
+		while ((ent = readdir(dir)) != nullptr)
+		{
+			dirFiles.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else
+	{
+		perror("");
+		return 0;
+	}
+	
+	for (int i = 0; i < dirFiles.size(); i++)
+	{
+		if (strcmp(w, dirFiles[i]) == 0)
+		{
+			strcat(s, dirFiles[i]);
+
+			int pid = fork();
+
+			if (pid == 0)
+			{
+				execl(s, dirFiles[i], (char*)nullptr);
+			}
+		}
+	}
+
+	return 1; 
 }
 
 int run_printenv(){
