@@ -5,6 +5,7 @@
 #include <iostream>
 #include "global.h"
 
+std::map<std::string, std::string> nestedAliases;
 std::map<std::string, std::string> aliasTable;
 std::string decipherAlias(std::string aliasText){
 	if(aliasTable.count(aliasText) > 0){
@@ -12,6 +13,34 @@ std::string decipherAlias(std::string aliasText){
 	}
 	return aliasText;
 }
+void setNestedVal(std::string s)
+{
+    for (auto it=aliasTable.begin(); it!=aliasTable.end(); ++it)
+	{
+		
+		if (aliasTable[it->first] == s)
+		{
+			nestedAliases[it->first] = nestedAliases[s];
+			setNestedVal(it->first);
+		}
+	}
+}
+bool checkCycle(std::string key, std::string val)
+{
+	for (auto it=aliasTable.begin(); it!=aliasTable.end(); ++it)
+	{
+		if (key == it->first)
+		{
+			return checkCycle(it->second, val);
+		}
+		else if (nestedAliases[val] == key)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 //y = std::string(getenv(yytext)); char c[100]; strcpy(c, y.substr(2, y.size()-1).c_str()); 
 //\$\{{CHAR}+\}	{std::string y = std::string(getenv(yytext)); std::cout<<y<<"\n"; yylval.string = strdup("ls"); return WORD;}
 %}

@@ -43,15 +43,15 @@ int run_unsetenv(char* var);
 	will print "Valid JSON" for each top-level JSON object it finds.
 	*/
 input:	/* empty */
-	ALIAS WORD WORD NEWLINE {run_alias($2, $3);}
-	| ALIAS NEWLINE {run_alias();}
-	| UNALIAS WORD NEWLINE {run_unalias($2);}
-	| SETENV WORD WORD NEWLINE {run_setenv($2, $3);}
-	| UNSETENV WORD NEWLINE {run_unsetenv($2);}
-    | PRINTENV NEWLINE {run_printenv();}
-	| CD WORD NEWLINE {run_cd($2);}
-	| CD NEWLINE {run_cd();}
-    | WORD NEWLINE {run_word($1);}
+	ALIAS WORD WORD NEWLINE {run_alias($2, $3); return 1;}
+	| ALIAS NEWLINE {run_alias(); return 1;}
+	| UNALIAS WORD NEWLINE {run_unalias($2); return 1;}
+	| SETENV WORD WORD NEWLINE {run_setenv($2, $3); return 1;}
+	| UNSETENV WORD NEWLINE {run_unsetenv($2); return 1;}
+    | PRINTENV NEWLINE {run_printenv(); return 1;}
+	| CD WORD NEWLINE {run_cd($2); return 1;}
+	| CD NEWLINE {run_cd(); return 1;}
+    | WORD NEWLINE {run_word($1); return 1;}
 
 %%
 
@@ -122,12 +122,65 @@ int run_alias(){
 }
 
 int run_alias(char* name, char* val){
+	
+	if (strcmp(name, val) == 0)
+	{
+		std::cout << "Error: alias cannot equal command" << std:: endl;
+		return 1;
+	}
+	
+	
+	//if nested key is val 
+	if (checkCycle(name, val))
+	{
+		std::cout << "Error: Would create long cycle infinite loop" << std::endl;
+		return 1;
+	}
+	
+	
+	for (auto it=aliasTable.begin(); it!=aliasTable.end(); ++it)
+	{
+		if (std::string(name) == it->second && std::string(val) == it->first)
+		{
+			std::cout << "Error: cannot create vice versa alias" << std::endl;
+			return 1;
+		}
+		else if (aliasTable[it->first] == std::string(name) || nestedAliases[it->first] == std::string(name))
+		{
+			std::cout << "entered" << std::endl;
+			nestedAliases[it->first] = std::string(val);
+			setNestedVal(it->first);
+		}
+	}
+	
+	std::cout << "Nested Aliases:" << std::endl;
+	for (auto iter = nestedAliases.begin(); iter != nestedAliases.end(); ++iter)
+	{
+		if (std::string(name) == iter->first && !nestedAliases[iter->first].empty())
+		{
+			nestedAliases.erase(iter->first);
+		}
+		
+		if (std::string(val) == iter->first)
+		{
+			nestedAliases[std::string(name)] = iter->second;
+		}
+		
+		if (!nestedAliases[iter->first].empty())
+		{
+			std::cout << iter->first << " = " << iter->second << std::endl;
+		}
+	}
+
 	aliasTable[std::string(name)] = std::string(val);
 	return 1;
 }
 
 int run_unalias(char* a){
+	
 	aliasTable.erase(std::string(a));
+	nestedAliases.erase(std::string(a));
+	setNestedVal(a);
 	return 1;
 }
 
