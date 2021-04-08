@@ -14,7 +14,7 @@ void updatePath(){
 
 	while((p.find(delimiter)>=0 && p.find(delimiter)<p.size())){
 		
-		path_array.push_back((std::string) p.substr(0,p.find(delimiter))+'/');
+		path_array.push_back('/'+(std::string) p.substr(0,p.find(delimiter))+'/');
 		p = p.substr(p.find(delimiter)+2);
 	}
 	

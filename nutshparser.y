@@ -87,7 +87,6 @@ int run_word(char* w, char** args)
 	for (int i=0; i<path_array.size(); ++i){ 
 		strcpy(s, path_array[i].c_str());
 		strcat(s, w);
-		std::cout << s << std::endl; 
 		if (stat((const char*) s, &st)==0)
 		{
 			int pid = fork();
