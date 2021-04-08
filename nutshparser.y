@@ -21,6 +21,7 @@ void yyerror(char* e) {
 
 int run_cd(char* dir = getenv("HOME"));
 int run_word(char* w);
+int run_word(char* w, std::vector<char*>* args);
 int run_printenv();
 int run_setenv(char* var, char* val);
 int run_unalias(char* a);
@@ -29,12 +30,17 @@ int run_alias(char* name, char* val);
 int run_unsetenv(char* var);
 %}
 
-%union {
-    char *string;
+%code requires {
+	
+#include <vector>
 }
 
+%define api.value.type union
+
+
 %start input
-%token <string> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS
+%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS
+%nterm <std::vector<char*>*> args_list
 
 %%
 
@@ -51,9 +57,16 @@ input:	/* empty */
     | PRINTENV NEWLINE {run_printenv(); return 1;}
 	| CD WORD NEWLINE {run_cd($2); return 1;}
 	| CD NEWLINE {run_cd(); return 1;}
+    | WORD args_list NEWLINE {run_word($1, $2); return 1;}
     | WORD NEWLINE {run_word($1); return 1;}
 
+
+args_list:
+	%empty {$$ = new std::vector<char*>;}
+	| WORD {$$ = new std::vector<char*>; $$->push_back($1);}
+	| args_list WORD {$$=$1; $$->push_back($2);}
 %%
+
 
 int run_cd(char* dir){
 	chdir(dir);
@@ -96,6 +109,15 @@ int run_word(char* w)
 		}
 	}
 
+	return 1; 
+}
+
+int run_word(char* w, std::vector<char*>* args){
+	std::cout<<w<<std::endl;
+	for (auto it : *args){
+		std::cout<<it<<" ";
+	}
+	std::cout<<<std::endl;
 	return 1; 
 }
 

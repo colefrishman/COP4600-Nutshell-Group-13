@@ -53,7 +53,7 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 
 %%
 
-<string_condition>{ANYCHAR}+     { yylval.string = strdup(yytext); return WORD;}
+<string_condition>{ANYCHAR}+     { yylval.WORD = strdup(yytext); return WORD;}
 <string_condition>[\"]          {BEGIN(INITIAL);}
 
 
@@ -67,5 +67,5 @@ unalias		{return UNALIAS;}
 cd			{return CD;}
 "\n"		{return NEWLINE;}
 [\"]        { BEGIN(string_condition); }
-\$\{{CHAR}+\}	{auto y = std::string(yytext); yylval.string = strdup(getenv(y.substr(y.find("${")+2, y.find('}')-2).c_str())); return WORD;}
-{CHAR}+		{yylval.string = strdup(yytext); return WORD;}
+\$\{{CHAR}+\}	{auto y = std::string(yytext); yylval.WORD = strdup(getenv(y.substr(y.find("${")+2, y.find('}')-2).c_str())); return WORD;}
+{CHAR}+		{yylval.WORD = strdup(yytext); return WORD;}
