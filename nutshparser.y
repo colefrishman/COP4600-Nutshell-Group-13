@@ -20,14 +20,16 @@ void yyerror(char* e) {
 }
 
 int run_cd(char* dir = getenv("HOME"));
-int run_word(char* w);
-int run_word(char* w, std::vector<char*>* args);
+int add_word(char* w, std::vector<char*>* args);
+int run_word(char* w, char** args);
 int run_printenv();
 int run_setenv(char* var, char* val);
 int run_unalias(char* a);
 int run_alias();
 int run_alias(char* name, char* val);
 int run_unsetenv(char* var);
+
+CommandTable tab;
 %}
 
 %code requires {
@@ -57,8 +59,8 @@ input:	/* empty */
     | PRINTENV NEWLINE {run_printenv(); return 1;}
 	| CD WORD NEWLINE {run_cd($2); return 1;}
 	| CD NEWLINE {run_cd(); return 1;}
-    | WORD args_list NEWLINE {run_word($1, $2); return 1;}
-    | WORD NEWLINE {run_word($1); return 1;}
+    | WORD args_list NEWLINE {add_word($1, $2); return 1;}
+    | WORD NEWLINE {add_word($1, new std::vector<char*>); return 1;}
 
 
 args_list:
@@ -73,7 +75,7 @@ int run_cd(char* dir){
 	return 1;
 }
 
-int run_word(char* w)
+int run_word(char* w, char** args)
 {
 	//printf("%s\n", w); return 1;
 	char s[50] = "/bin/";
@@ -104,7 +106,7 @@ int run_word(char* w)
 
 			if (pid == 0)
 			{
-				execl(s, dirFiles[i], (char*)nullptr);
+				execv(s, args);
 			}
 		}
 	}
@@ -112,12 +114,13 @@ int run_word(char* w)
 	return 1; 
 }
 
-int run_word(char* w, std::vector<char*>* args){
-	std::cout<<w<<std::endl;
-	for (auto it : *args){
-		std::cout<<it<<" ";
-	}
-	std::cout<<<std::endl;
+int add_word(char* w, std::vector<char*>* args){	
+	args->insert(args->begin(), w);
+	args->push_back((char*) nullptr);
+	tab.name[tab.idx]=w;
+	tab.argnum[tab.idx] = args->size();
+	tab.args[tab.idx] = args->data();
+	++(tab.idx);
 	return 1; 
 }
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <limits.h>
+#include "global.h"
 
 using namespace std;
 
@@ -20,10 +21,15 @@ string get_intro(){
 	return user+'@'+host+':'+dir+"$ ";
 }
 
+extern CommandTable tab;
 int main() {
 	while(1){
+		tab.idx=0;
 		cout << get_intro();
 		yyparse();
+		if(tab.idx>0){
+			run_word(tab.name[0], tab.args[0]);
+		}
 	}
 	return 0;
 }
