@@ -8,6 +8,7 @@
 #include "global.h"
 #include <dirent.h>
 #include <vector>
+#include <sys/stat.h>
 
 //#define YYSTYPE char*
 
@@ -77,37 +78,18 @@ int run_cd(char* dir){
 
 int run_word(char* w, char** args)
 {
-	//printf("%s\n", w); return 1;
-	char s[50] = "/bin/";
-	std::vector<char*> dirFiles;
-	DIR* dir;
-	struct dirent *ent;
-	if ((dir = opendir("/usr/bin")) != nullptr)
-	{
-		while ((ent = readdir(dir)) != nullptr)
-		{
-			dirFiles.push_back(ent->d_name);
-		}
-		closedir(dir);
-	}
-	else
-	{
-		perror("");
-		return 0;
-	}
-	
-	for (int i = 0; i < dirFiles.size(); i++)
-	{
-		if (strcmp(w, dirFiles[i]) == 0)
-		{
-			strcat(s, dirFiles[i]);
+	char s[100] = "/usr/bin/";
+	strcat(s, w);
 
-			int pid = fork();
+	struct stat st;
+			
+	if (stat((const char*) s, &st)==0)
+	{
+		int pid = fork();
 
-			if (pid == 0)
-			{
-				execv(s, args);
-			}
+		if (pid == 0)
+		{
+			execv(s, args);
 		}
 	}
 

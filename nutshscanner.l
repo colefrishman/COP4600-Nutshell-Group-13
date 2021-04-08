@@ -41,8 +41,6 @@ bool checkCycle(std::string key, std::string val)
 	return false;
 }
 
-//y = std::string(getenv(yytext)); char c[100]; strcpy(c, y.substr(2, y.size()-1).c_str()); 
-//\$\{{CHAR}+\}	{std::string y = std::string(getenv(yytext)); std::cout<<y<<"\n"; yylval.string = strdup("ls"); return WORD;}
 %}
 %array
 %option noyywrap
