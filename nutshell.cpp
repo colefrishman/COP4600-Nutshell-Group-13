@@ -22,6 +22,9 @@ string get_intro(){
 }
 
 extern CommandTable tab;
+
+std::vector<std::string> path_array;
+
 int main() {
 	while(1){
 		tab.idx=0;

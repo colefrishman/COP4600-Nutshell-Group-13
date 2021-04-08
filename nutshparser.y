@@ -29,6 +29,7 @@ int run_unalias(char* a);
 int run_alias();
 int run_alias(char* name, char* val);
 int run_unsetenv(char* var);
+extern std::vector<std::string> path_array;
 
 CommandTable tab;
 %}
@@ -78,18 +79,25 @@ int run_cd(char* dir){
 
 int run_word(char* w, char** args)
 {
-	char s[100] = "/usr/bin/";
-	strcat(s, w);
-
+	updatePath();
 	struct stat st;
-			
-	if (stat((const char*) s, &st)==0)
-	{
-		int pid = fork();
-
-		if (pid == 0)
+	bool exec = false;
+	char s[100];
+	
+	for (int i=0; i<path_array.size(); ++i){ 
+		strcpy(s, path_array[i].c_str());
+		strcat(s, w);
+		std::cout << s << std::endl; 
+		if (stat((const char*) s, &st)==0)
 		{
-			execv(s, args);
+			int pid = fork();
+
+			if (pid == 0)
+			{
+				execv(s, args);
+			}
+			exec = true;
+			break;
 		}
 	}
 

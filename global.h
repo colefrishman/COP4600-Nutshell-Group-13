@@ -15,6 +15,11 @@ void setNestedVal(std::string s);
 
 bool checkCycle(std::string s, std::string val);
 
+extern std::vector<std::string> path_array;
+
+void updatePath();
+
+
 struct CommandTable{
 	char* name[100];
 	int argnum[100];
