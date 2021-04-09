@@ -56,6 +56,7 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 
 
 [ ]		    { }
+\|			{return PIPE;}
 bye			{exit(1); return 0;}
 setenv		{return SETENV;}
 printenv	{return PRINTENV;}

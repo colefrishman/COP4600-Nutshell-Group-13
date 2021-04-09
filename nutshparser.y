@@ -23,12 +23,14 @@ void yyerror(char* e) {
 int run_cd(char* dir = getenv("HOME"));
 int add_word(char* w, std::vector<char*>* args);
 int run_word(char* w, char** args);
+int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to);
 int run_printenv();
 int run_setenv(char* var, char* val);
 int run_unalias(char* a);
 int run_alias();
 int run_alias(char* name, char* val);
 int run_unsetenv(char* var);
+int add_pipe(int from, int to);
 extern std::vector<std::string> path_array;
 
 CommandTable tab;
@@ -42,27 +44,35 @@ CommandTable tab;
 %define api.value.type union
 
 
-%start input
-%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS
+%start command
+%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE
 %nterm <std::vector<char*>*> args_list
+%nterm <int> input
+%nterm <int> command
 
 %%
 
-	/*
-	Input is a list of objects. This makes yyparse work interactively, and it
-	will print "Valid JSON" for each top-level JSON object it finds.
-	*/
-input:	/* empty */
-	ALIAS WORD WORD NEWLINE {run_alias($2, $3); return 1;}
-	| ALIAS NEWLINE {run_alias(); return 1;}
-	| UNALIAS WORD NEWLINE {run_unalias($2); return 1;}
-	| SETENV WORD WORD NEWLINE {run_setenv($2, $3); return 1;}
-	| UNSETENV WORD NEWLINE {run_unsetenv($2); return 1;}
-    | PRINTENV NEWLINE {run_printenv(); return 1;}
-	| CD WORD NEWLINE {run_cd($2); return 1;}
-	| CD NEWLINE {run_cd(); return 1;}
-    | WORD args_list NEWLINE {add_word($1, $2); return 1;}
-    | WORD NEWLINE {add_word($1, new std::vector<char*>); return 1;}
+input:
+	%empty {}
+	| command NEWLINE {$<int>$ = -1; return 1;}
+	| input PIPE command NEWLINE {$<int>$ = add_pipe($1, $3); return 1;}
+	| command PIPE command NEWLINE {$<int>$ = add_pipe($1, $3); return 1;}
+
+command:	/* empty */
+	ALIAS WORD WORD NEWLINE 		{$$ = -1; run_alias($2, $3); return 1;}
+	| ALIAS NEWLINE 				{$$ = -1; run_alias(); return 1;}
+	| UNALIAS WORD NEWLINE 			{$$ = -1; run_unalias($2); return 1;}
+	| SETENV WORD WORD NEWLINE 		{$$ = -1; run_setenv($2, $3); return 1;}
+	| UNSETENV WORD NEWLINE 		{$$ = -1; run_unsetenv($2); return 1;}
+    | PRINTENV NEWLINE 				{$$ = -1; run_printenv(); return 1;}
+	| CD WORD NEWLINE 				{$$ = -1; run_cd($2); return 1;}
+	| CD NEWLINE 					{$$ = -1; run_cd(); return 1;}
+    | WORD args_list NEWLINE		{$$ = add_word($1, $2); return 1;}
+    | WORD NEWLINE					{$$ = add_word($1, new std::vector<char*>); return 1;}
+	| WORD PIPE WORD NEWLINE {$$ = add_pipe(add_word($1, new std::vector<char*>), add_word($3, new std::vector<char*>)); return 1;}
+	| WORD args_list PIPE WORD NEWLINE {$$ = add_pipe(add_word($1, $2), add_word($4, new std::vector<char*>)); return 1;}
+	| WORD PIPE WORD args_list NEWLINE {$$ = add_pipe(add_word($1, new std::vector<char*>), add_word($3, $4)); return 1;}
+	| WORD args_list PIPE WORD args_list NEWLINE {$$ = add_pipe(add_word($1, $2), add_word($4, $5)); return 1;}
 
 
 args_list:
@@ -75,6 +85,63 @@ args_list:
 int run_cd(char* dir){
 	chdir(dir);
 	return 1;
+}
+
+
+int add_pipe(int from, int to){
+	tab.output[from] = to;
+	tab.input[to] = from;
+	tab.pipes[tab.numPipes] = std::pair<int, int>(from, to);
+	tab.numPipes = tab.numPipes+1;
+	return to;
+}
+
+int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to)
+{
+	updatePath();
+	struct stat st;
+	bool exec = false;
+	char s_from[100];
+	char s_to[100];
+	
+	for (int i=0; i<path_array.size(); ++i){ 
+		strcpy(s_from, path_array[i].c_str());
+		strcat(s_from, w_from);
+		if (stat((const char*) s_from, &st)==0) { break; }
+	}
+
+	for (int i=0; i<path_array.size(); ++i){ 
+		strcpy(s_to, path_array[i].c_str());
+		strcat(s_to, w_to);
+		if (stat((const char*) s_to, &st)==0) { break; }
+	}
+
+		int pid = fork();
+
+		int fd[2];
+		if(pipe(fd) == -1){
+			std::cout << "pipe error" << std::endl;
+		}
+		if (pid == 0)
+		{
+			pid = fork();
+			if (pid == 0)
+			{
+				dup2(fd[1], STDOUT_FILENO);
+    			close(fd[1]);
+   				close(fd[0]);
+				execv(s_from, args_from);
+			}
+			else{
+				dup2(fd[0], STDIN_FILENO);
+    			close(fd[1]);
+   				close(fd[0]);
+				execv(s_to, args_to);
+			}
+			exit(1);
+		}
+		exec = true;
+	return 1; 
 }
 
 int run_word(char* w, char** args)
@@ -110,7 +177,8 @@ int add_word(char* w, std::vector<char*>* args){
 	tab.argnum[tab.idx] = args->size();
 	tab.args[tab.idx] = args->data();
 	++(tab.idx);
-	return 1; 
+	
+	return tab.idx-1; 
 }
 
 int run_printenv(){
