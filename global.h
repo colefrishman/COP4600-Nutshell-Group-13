@@ -20,7 +20,8 @@ extern std::vector<std::string> path_array;
 
 void updatePath();
 
-int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to);
+int run_pipe(int from, int to);
+int run_all_pipes();
 
 
 struct CommandTable{

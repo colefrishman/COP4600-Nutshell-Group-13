@@ -32,11 +32,7 @@ void run_pipes(){
 		   return;
 		};
 	}
-	while (i<tab.idx){
-		
-	}
 }
-
 
 std::vector<std::string> path_array;
 
@@ -45,16 +41,18 @@ int main() {
 	while(1){
 
 		cout << get_intro();
+		
 		yyparse();
 		if(tab.idx>0){
-			if(tab.numPipes){
-				run_pipe(tab.name[tab.pipes[0].first], tab.args[tab.pipes[0].first], tab.name[tab.pipes[0].second], tab.args[tab.pipes[0].second]);
-				tab.numPipes=0;
-			}
-			else{
+			int pipeNo = 0;
+			if(tab.numPipes==0){
 				run_word(tab.name[0], tab.args[0]);
 			}
+			else{
+				run_all_pipes();
+			}
 			tab.idx=0;
+			tab.numPipes = 0;
 		}
 	}
 	return 0;

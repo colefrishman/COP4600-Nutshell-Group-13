@@ -44,20 +44,25 @@ CommandTable tab;
 %define api.value.type union
 
 
-%start command
+%start input
 %token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE
 %nterm <std::vector<char*>*> args_list
 %nterm <int> input
 %nterm <int> command
+%nterm <int> pipe_list
 
 %%
 
 input:
 	%empty {}
-	| command NEWLINE {$<int>$ = -1; return 1;}
-	| input PIPE command NEWLINE {$<int>$ = add_pipe($1, $3); return 1;}
-	| command PIPE command NEWLINE {$<int>$ = add_pipe($1, $3); return 1;}
+	| pipe_list NEWLINE {return 1;}
+	| command {return 1;}
+	| NEWLINE {return 1;}
 
+pipe_list:
+	pipe_list PIPE WORD args_list {$$ = add_pipe($1, add_word($3, $4));}
+	| WORD args_list {$$ = add_word($1, $2);}
+	
 command:	/* empty */
 	ALIAS WORD WORD NEWLINE 		{$$ = -1; run_alias($2, $3); return 1;}
 	| ALIAS NEWLINE 				{$$ = -1; run_alias(); return 1;}
@@ -67,12 +72,6 @@ command:	/* empty */
     | PRINTENV NEWLINE 				{$$ = -1; run_printenv(); return 1;}
 	| CD WORD NEWLINE 				{$$ = -1; run_cd($2); return 1;}
 	| CD NEWLINE 					{$$ = -1; run_cd(); return 1;}
-    | WORD args_list NEWLINE		{$$ = add_word($1, $2); return 1;}
-    | WORD NEWLINE					{$$ = add_word($1, new std::vector<char*>); return 1;}
-	| WORD PIPE WORD NEWLINE {$$ = add_pipe(add_word($1, new std::vector<char*>), add_word($3, new std::vector<char*>)); return 1;}
-	| WORD args_list PIPE WORD NEWLINE {$$ = add_pipe(add_word($1, $2), add_word($4, new std::vector<char*>)); return 1;}
-	| WORD PIPE WORD args_list NEWLINE {$$ = add_pipe(add_word($1, new std::vector<char*>), add_word($3, $4)); return 1;}
-	| WORD args_list PIPE WORD args_list NEWLINE {$$ = add_pipe(add_word($1, $2), add_word($4, $5)); return 1;}
 
 
 args_list:
@@ -96,9 +95,13 @@ int add_pipe(int from, int to){
 	return to;
 }
 
-int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to)
+int run_pipe(int from, int to)
 {
 	updatePath();
+	char* w_from = tab.name[from];
+	char** args_from = tab.args[from];
+	char* w_to = tab.name[to];
+	char** args_to = tab.args[to];
 	struct stat st;
 	bool exec = false;
 	char s_from[100];
@@ -141,6 +144,92 @@ int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to)
 			exit(1);
 		}
 		exec = true;
+	return 1; 
+}
+
+
+int run_all_pipes(){
+	updatePath();
+	int n = tab.numPipes;
+
+	char* w_from[100];
+	char** args_from[100];
+	char* w_to[100];
+	char** args_to[100];
+
+
+	for(int i =0; i<n; ++i){
+		w_from[i] = tab.name[tab.pipes[i].first];
+		args_from[i] = tab.args[tab.pipes[i].first];
+		w_to[i] = tab.name[tab.pipes[i].second];
+		args_to[i] = tab.args[tab.pipes[i].second];
+	}
+
+	struct stat st;
+	bool exec = false;
+	char s_from[100][100];
+	char s_to[100][100];
+
+	for(int j=0; j<n; ++j){
+		for (int i=0; i<path_array.size(); ++i){ 
+			strcpy(s_from[j], path_array[i].c_str());
+			strcat(s_from[j], w_from[j]);
+			if (stat((const char*) s_from[j], &st)==0) { break; }
+		}
+	}
+	for(int j=0; j<n; ++j){
+		for (int i=0; i<path_array.size(); ++i){ 
+			strcpy(s_to[j], path_array[i].c_str());
+			strcat(s_to[j], w_to[j]);
+			if (stat((const char*) s_to[j], &st)==0) { break; }
+		}
+	}
+
+	int pid = fork();
+	if(pid != 0){return 1;}
+
+	int fd[n][2];
+
+	if(pipe(fd[0]) == -1){
+		std::cout << "pipe error" << std::endl;
+	}
+
+	pid = fork();
+
+	if(pid != 0){
+		dup2(fd[0][1], STDOUT_FILENO);
+   		close(fd[0][0]);
+		execv(s_from[0], args_from[0]);
+		exit(1);
+	}
+
+	for(int i = 0; i<n; ++i){
+
+		std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
+		if(i>0){
+			if(pipe(fd[i]) == -1){
+				std::cout << "pipe error" << std::endl;
+			}
+			pid = fork();
+		}
+
+			if (pid != 0)
+			{
+				dup2(fd[i][1], STDOUT_FILENO);
+   				close(fd[i][0]);
+			}
+			else{
+				dup2(fd[i][0], STDIN_FILENO);
+    			close(fd[i][1]);
+				execv(s_to[i], args_to[i]);
+			}
+
+		std::cout<<"here"<<std::endl;
+	}
+		dup2(fd[n-1][1], STDOUT_FILENO);
+    	close(fd[n-1][1]);
+   		close(fd[n-1][0]);
+		   exit(1);
 	return 1; 
 }
 
