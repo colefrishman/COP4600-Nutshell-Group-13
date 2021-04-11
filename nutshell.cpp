@@ -49,7 +49,7 @@ int main() {
 				run_word(tab.name[0], tab.args[0], tab.bg);
 			}
 			else{
-				run_all_pipes();
+				run_all_pipes(tab.bg);
 			}
 			tab.idx=0;
 			tab.numPipes = 0;

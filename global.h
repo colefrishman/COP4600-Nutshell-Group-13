@@ -21,7 +21,7 @@ extern std::vector<std::string> path_array;
 void updatePath();
 
 int run_pipe(int from, int to);
-int run_all_pipes();
+int run_all_pipes(bool background);
 
 
 struct CommandTable{

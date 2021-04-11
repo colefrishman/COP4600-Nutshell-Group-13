@@ -150,7 +150,7 @@ int run_pipe(int from, int to)
 }
 
 
-int run_all_pipes(){
+int run_all_pipes(bool background){
 	updatePath();
 	int n = tab.numPipes;
 
@@ -188,7 +188,13 @@ int run_all_pipes(){
 	}
 
 	pid_t pid = fork();
-	if(pid != 0){return 1;}
+	if(pid != 0){
+		if(!background){
+			int status;
+    		waitpid(pid, &status, 0);
+		}
+		return 1;
+	}
 
 	int fd[2];
 	int inp = 0;
@@ -213,6 +219,7 @@ int run_all_pipes(){
 
 			execv(s_from[i], args_from[i]);
 		}
+				
 		close(fd[1]);
 			
 		inp = fd[0];
