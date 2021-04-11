@@ -23,18 +23,37 @@ string get_intro(){
 
 extern CommandTable tab;
 
+void run_pipes(){
+	int i =0;
+	int pipes[tab.numPipes][2];
+	for(int i=0; i<tab.numPipes; i++){
+		if(pipe(pipes[i])==-1){
+		   cout << "There was a problem creating a pipe" << endl;
+		   return;
+		};
+	}
+}
+
 std::vector<std::string> path_array;
 
 int main() {
+	tab.numPipes=0;
 	while(1){
-		tab.idx=0;
+
 		cout << get_intro();
+		
 		yyparse();
 		if(tab.idx>0){
-			run_word(tab.name[0], tab.args[0]);
+			int pipeNo = 0;
+			if(tab.numPipes==0){
+				run_word(tab.name[0], tab.args[0]);
+			}
+			else{
+				run_all_pipes();
+			}
+			tab.idx=0;
+			tab.numPipes = 0;
 		}
 	}
 	return 0;
 }
-
-	/*WORD NEWLINE	{ printf("%s",$1); return 1;};*/

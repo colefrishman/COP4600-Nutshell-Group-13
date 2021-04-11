@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 extern std::map<std::string, std::string> aliasTable;
 
@@ -19,13 +20,19 @@ extern std::vector<std::string> path_array;
 
 void updatePath();
 
+int run_pipe(int from, int to);
+int run_all_pipes();
+
 
 struct CommandTable{
 	char* name[100];
 	int argnum[100];
 	char** args[100];
-	char* input[100];
-	char* output[100];
+	int input[100];
+	int output[100];
+
+	int numPipes;
+	std::pair<int, int> pipes[100];
 
 	int idx;
 };
