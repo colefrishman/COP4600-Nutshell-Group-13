@@ -30,6 +30,7 @@ struct CommandTable{
 	char** args[100];
 	int input[100];
 	int output[100];
+	bool bg;
 
 	int numPipes;
 	std::pair<int, int> pipes[100];
@@ -37,6 +38,6 @@ struct CommandTable{
 	int idx;
 };
 
-int run_word(char* w, char** args);
+int run_word(char* w, char** args, bool background);
 
 #endif

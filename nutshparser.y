@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <vector>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 //#define YYSTYPE char*
 
@@ -22,7 +23,7 @@ void yyerror(char* e) {
 
 int run_cd(char* dir = getenv("HOME"));
 int add_word(char* w, std::vector<char*>* args);
-int run_word(char* w, char** args);
+int run_word(char* w, char** args, bool background);
 int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to);
 int run_printenv();
 int run_setenv(char* var, char* val);
@@ -45,7 +46,7 @@ CommandTable tab;
 
 
 %start input
-%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE
+%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE AMPERSAND
 %nterm <std::vector<char*>*> args_list
 %nterm <int> input
 %nterm <int> command
@@ -55,8 +56,9 @@ CommandTable tab;
 
 input:
 	%empty {}
-	| pipe_list NEWLINE {return 1;}
-	| command {return 1;}
+	| pipe_list AMPERSAND NEWLINE {tab.bg=1;return 1;}
+	| pipe_list NEWLINE {tab.bg=0; return 1;}
+	| command NEWLINE {return 1;}
 	| NEWLINE {return 1;}
 
 pipe_list:
@@ -64,14 +66,14 @@ pipe_list:
 	| WORD args_list {$$ = add_word($1, $2);}
 	
 command:	/* empty */
-	ALIAS WORD WORD NEWLINE 		{$$ = -1; run_alias($2, $3); return 1;}
-	| ALIAS NEWLINE 				{$$ = -1; run_alias(); return 1;}
-	| UNALIAS WORD NEWLINE 			{$$ = -1; run_unalias($2); return 1;}
-	| SETENV WORD WORD NEWLINE 		{$$ = -1; run_setenv($2, $3); return 1;}
-	| UNSETENV WORD NEWLINE 		{$$ = -1; run_unsetenv($2); return 1;}
-    | PRINTENV NEWLINE 				{$$ = -1; run_printenv(); return 1;}
-	| CD WORD NEWLINE 				{$$ = -1; run_cd($2); return 1;}
-	| CD NEWLINE 					{$$ = -1; run_cd(); return 1;}
+	ALIAS WORD WORD 		{$$ = -1; run_alias($2, $3); return 1;}
+	| ALIAS 				{$$ = -1; run_alias(); return 1;}
+	| UNALIAS WORD 			{$$ = -1; run_unalias($2); return 1;}
+	| SETENV WORD WORD 		{$$ = -1; run_setenv($2, $3); return 1;}
+	| UNSETENV WORD 		{$$ = -1; run_unsetenv($2); return 1;}
+    | PRINTENV 				{$$ = -1; run_printenv(); return 1;}
+	| CD WORD 				{$$ = -1; run_cd($2); return 1;}
+	| CD 					{$$ = -1; run_cd(); return 1;}
 
 
 args_list:
@@ -191,8 +193,7 @@ int run_all_pipes(){
 	int fd[2];
 	int inp = 0;
 	int outp;
-	int i;
-	for(i = 0; i<n; ++i){
+	for(int i = 0; i<n; ++i){
 		//std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
 		if(pipe(fd) == -1){
 			std::cout << "pipe error" << std::endl;
@@ -223,7 +224,7 @@ int run_all_pipes(){
 	return 1; 
 }
 
-int run_word(char* w, char** args)
+int run_word(char* w, char** args, bool background)
 {
 	updatePath();
 	struct stat st;
@@ -241,11 +242,14 @@ int run_word(char* w, char** args)
 			{
 				execv(s, args);
 			}
+			else if(!background){
+				int status;
+    			waitpid(pid, &status, 0);
+			}
 			exec = true;
 			break;
 		}
 	}
-
 	return 1; 
 }
 

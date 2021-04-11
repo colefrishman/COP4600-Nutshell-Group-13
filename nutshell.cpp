@@ -46,7 +46,7 @@ int main() {
 		if(tab.idx>0){
 			int pipeNo = 0;
 			if(tab.numPipes==0){
-				run_word(tab.name[0], tab.args[0]);
+				run_word(tab.name[0], tab.args[0], tab.bg);
 			}
 			else{
 				run_all_pipes();
