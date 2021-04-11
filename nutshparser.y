@@ -185,51 +185,41 @@ int run_all_pipes(){
 		}
 	}
 
-	int pid = fork();
+	pid_t pid = fork();
 	if(pid != 0){return 1;}
 
-	int fd[n][2];
-
-	if(pipe(fd[0]) == -1){
-		std::cout << "pipe error" << std::endl;
-	}
-
-	pid = fork();
-
-	if(pid != 0){
-		dup2(fd[0][1], STDOUT_FILENO);
-   		close(fd[0][0]);
-		execv(s_from[0], args_from[0]);
-		exit(1);
-	}
-
-	for(int i = 0; i<n; ++i){
-
-		std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
-		if(i>0){
-			if(pipe(fd[i]) == -1){
-				std::cout << "pipe error" << std::endl;
-			}
-			pid = fork();
+	int fd[2];
+	int inp = 0;
+	int outp;
+	int i;
+	for(i = 0; i<n; ++i){
+		//std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
+		if(pipe(fd) == -1){
+			std::cout << "pipe error" << std::endl;
 		}
-
-			if (pid != 0)
+		outp = fd[1];
+		pid = fork();
+		if(pid==0){
+			if (inp != 0)
 			{
-				dup2(fd[i][1], STDOUT_FILENO);
-   				close(fd[i][0]);
+				dup2(inp, 0);
+   				close(inp);
 			}
-			else{
-				dup2(fd[i][0], STDIN_FILENO);
-    			close(fd[i][1]);
-				execv(s_to[i], args_to[i]);
+			if(outp!=1){
+				dup2(outp, 1);
+   				close(outp);
 			}
 
-		std::cout<<"here"<<std::endl;
+			execv(s_from[i], args_from[i]);
+		}
+		close(fd[1]);
+			
+		inp = fd[0];
 	}
-		dup2(fd[n-1][1], STDOUT_FILENO);
-    	close(fd[n-1][1]);
-   		close(fd[n-1][0]);
-		   exit(1);
+	if (inp != 0){
+    	dup2 (inp, 0);
+		execv(s_to[n-1], args_to[n-1]);
+	}
 	return 1; 
 }
 
