@@ -19,6 +19,7 @@ int yyparse(); // Need this definition so that yyerror can call it
 
 void yyerror(char* e) {
 	printf("Error: %s\n", e);
+	yyparse();
 }
 
 int run_cd(char* dir = getenv("HOME"));
@@ -219,7 +220,7 @@ int run_all_pipes(bool background){
 
 			execv(s_from[i], args_from[i]);
 		}
-				
+
 		close(fd[1]);
 			
 		inp = fd[0];

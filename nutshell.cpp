@@ -18,7 +18,7 @@ string get_intro(){
 	string user = string(getenv("USER"));
 	gethostname(buf, PATH_MAX);
 	string host = string(buf);
-	return user+'@'+host+':'+dir+"$ ";
+	return YELLOW+user+'@'+host+':'+BLUE+dir+"$ "+DEFAULT;
 }
 
 extern CommandTable tab;
