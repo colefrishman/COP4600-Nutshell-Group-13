@@ -72,14 +72,14 @@ pipe_list:
 	| WORD args_list {$$ = add_word($1, $2);}
 	
 command:	/* empty */
-	ALIAS WORD WORD 		{$$ = -1; run_alias($2, $3); return 1;}
-	| ALIAS 				{$$ = -1; run_alias(); return 1;}
-	| UNALIAS WORD 			{$$ = -1; run_unalias($2); return 1;}
-	| SETENV WORD WORD 		{$$ = -1; run_setenv($2, $3); return 1;}
-	| UNSETENV WORD 		{$$ = -1; run_unsetenv($2); return 1;}
-    | PRINTENV 				{$$ = -1; run_printenv(); return 1;}
-	| CD WORD 				{$$ = -1; run_cd($2); return 1;}
-	| CD 					{$$ = -1; run_cd(); return 1;}
+	ALIAS WORD WORD 		{$$ = -1; run_alias($2, $3);}
+	| ALIAS 				{$$ = -1; run_alias();}
+	| UNALIAS WORD 			{$$ = -1; run_unalias($2);}
+	| SETENV WORD WORD 		{$$ = -1; run_setenv($2, $3);}
+	| UNSETENV WORD 		{$$ = -1; run_unsetenv($2);}
+    | PRINTENV 				{$$ = -1; run_printenv();}
+	| CD WORD 				{$$ = -1; run_cd($2);}
+	| CD 					{$$ = -1; run_cd();}
 
 
 args_list:

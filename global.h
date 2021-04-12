@@ -14,6 +14,10 @@
 #define MAGENTA	"\x1B[35m"
 #define CYAN 	"\x1B[36m"
 #define WHITE 	"\x1B[37m"
+#define	RESET	"\e[0m"
+#define BOLD 	"\e[1m"
+#define ITALIC 	"\e[3m"
+#define UNDER	"\e[4m"
 
 extern std::map<std::string, std::string> aliasTable;
 

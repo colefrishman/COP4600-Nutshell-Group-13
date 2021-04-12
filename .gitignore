@@ -55,4 +55,5 @@ dkms.conf
 nutshparser.tab.*
 lex.yy.c
 nutshell
+*.txt
 .vscode
