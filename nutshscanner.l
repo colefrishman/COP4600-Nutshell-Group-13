@@ -61,6 +61,8 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 \<			{return LEFTAB;}
 \>\>		{return DOUBLERIGHTAB;}
 \>			{return RIGHTAB;}
+"2>&1"		{return ERRTOOUT;}
+"2>"		{return ERRTO;}
 bye			{exit(1); return 0;}
 setenv		{return SETENV;}
 printenv	{return PRINTENV;}

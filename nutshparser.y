@@ -47,7 +47,7 @@ CommandTable tab;
 
 
 %start input
-%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE AMPERSAND LEFTAB RIGHTAB DOUBLERIGHTAB
+%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE AMPERSAND LEFTAB RIGHTAB DOUBLERIGHTAB ERRTO ERRTOOUT
 %nterm <std::vector<char*>*> args_list
 %nterm <int> input
 %nterm <int> command
@@ -63,7 +63,9 @@ input:
 	| NEWLINE {return 1;}
 
 pipe_list:
-	pipe_list DOUBLERIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 2;}
+	pipe_list ERRTO WORD {$$ = $1; tab.err_re = 2;}
+	| pipe_list ERRTOOUT {$$ = $1; tab.err_re=1;}
+	| pipe_list DOUBLERIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 2;}
 	| pipe_list RIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 1;}
 	| pipe_list LEFTAB WORD {$$ = $1; tab.input_file = $3; tab.input_re = 1;}
 	| pipe_list PIPE WORD args_list {$$ = add_pipe($1, add_word($3, $4));}
@@ -189,6 +191,15 @@ int run_all_pipes(bool background){
 		dup2(outp, STDOUT_FILENO);
 		close(outp);
 	}
+	if(tab.err_re==1){
+		dup2(STDOUT_FILENO, STDERR_FILENO);
+		close(outp);
+	}
+	if(tab.err_re==2){
+		outp = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
+		dup2(outp, STDERR_FILENO);
+		close(outp);
+	}
 	if (inp != 0){
     	dup2 (inp, 0);
 		execv(s_to[n-1], args_to[n-1]);
@@ -226,6 +237,14 @@ int run_word(char* w, char** args, bool background)
 					auto out = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
 					dup2(out,STDOUT_FILENO);
 					close(out);
+				}
+				if(tab.err_re==1){
+					dup2(STDOUT_FILENO, STDERR_FILENO);
+				}
+				if(tab.err_re==2){
+					auto outp = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
+					dup2(outp, STDERR_FILENO);
+					close(outp);
 				}
 				execv(s, args);
 			}
