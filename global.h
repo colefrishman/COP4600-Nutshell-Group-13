@@ -29,7 +29,6 @@ extern std::vector<std::string> path_array;
 
 void updatePath();
 
-int run_pipe(int from, int to);
 int run_all_pipes(bool background);
 
 
@@ -37,9 +36,14 @@ struct CommandTable{
 	char* name[100];
 	int argnum[100];
 	char** args[100];
-	int input[100];
-	int output[100];
+	char* input_file;
+	char* output_file;
+	char err_file[100];
 	bool bg;
+
+	bool input_re;
+	unsigned char output_re;
+	unsigned char err_re;
 
 	int numPipes;
 	std::pair<int, int> pipes[100];

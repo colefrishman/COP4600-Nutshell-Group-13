@@ -58,6 +58,9 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 [ ]		    { }
 \|			{return PIPE;}
 "&"			{return AMPERSAND;}
+\<			{return LEFTAB;}
+\>\>		{return DOUBLERIGHTAB;}
+\>			{return RIGHTAB;}
 bye			{exit(1); return 0;}
 setenv		{return SETENV;}
 printenv	{return PRINTENV;}

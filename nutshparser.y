@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <vector>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 
 //#define YYSTYPE char*
@@ -25,7 +26,6 @@ void yyerror(char* e) {
 int run_cd(char* dir = getenv("HOME"));
 int add_word(char* w, std::vector<char*>* args);
 int run_word(char* w, char** args, bool background);
-int run_pipe(char* w_from, char** args_from, char* w_to, char** args_to);
 int run_printenv();
 int run_setenv(char* var, char* val);
 int run_unalias(char* a);
@@ -47,7 +47,7 @@ CommandTable tab;
 
 
 %start input
-%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE AMPERSAND
+%token <char*> WORD NEWLINE CD PRINTENV SETENV WHITESPACE UNSETENV ALIAS UNALIAS PIPE AMPERSAND LEFTAB RIGHTAB DOUBLERIGHTAB
 %nterm <std::vector<char*>*> args_list
 %nterm <int> input
 %nterm <int> command
@@ -57,13 +57,16 @@ CommandTable tab;
 
 input:
 	%empty {}
-	| pipe_list AMPERSAND NEWLINE {tab.bg=1;return 1;}
+	| pipe_list AMPERSAND NEWLINE {tab.bg=1; return 1;}
 	| pipe_list NEWLINE {tab.bg=0; return 1;}
 	| command NEWLINE {return 1;}
 	| NEWLINE {return 1;}
 
 pipe_list:
-	pipe_list PIPE WORD args_list {$$ = add_pipe($1, add_word($3, $4));}
+	pipe_list DOUBLERIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 2;}
+	| pipe_list RIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 1;}
+	| pipe_list LEFTAB WORD {$$ = $1; tab.input_file = $3; tab.input_re = 1;}
+	| pipe_list PIPE WORD args_list {$$ = add_pipe($1, add_word($3, $4));}
 	| WORD args_list {$$ = add_word($1, $2);}
 	
 command:	/* empty */
@@ -91,63 +94,9 @@ int run_cd(char* dir){
 
 
 int add_pipe(int from, int to){
-	tab.output[from] = to;
-	tab.input[to] = from;
 	tab.pipes[tab.numPipes] = std::pair<int, int>(from, to);
 	tab.numPipes = tab.numPipes+1;
 	return to;
-}
-
-int run_pipe(int from, int to)
-{
-	updatePath();
-	char* w_from = tab.name[from];
-	char** args_from = tab.args[from];
-	char* w_to = tab.name[to];
-	char** args_to = tab.args[to];
-	struct stat st;
-	bool exec = false;
-	char s_from[100];
-	char s_to[100];
-	
-	for (int i=0; i<path_array.size(); ++i){ 
-		strcpy(s_from, path_array[i].c_str());
-		strcat(s_from, w_from);
-		if (stat((const char*) s_from, &st)==0) { break; }
-	}
-
-	for (int i=0; i<path_array.size(); ++i){ 
-		strcpy(s_to, path_array[i].c_str());
-		strcat(s_to, w_to);
-		if (stat((const char*) s_to, &st)==0) { break; }
-	}
-
-		int pid = fork();
-
-		int fd[2];
-		if(pipe(fd) == -1){
-			std::cout << "pipe error" << std::endl;
-		}
-		if (pid == 0)
-		{
-			pid = fork();
-			if (pid == 0)
-			{
-				dup2(fd[1], STDOUT_FILENO);
-    			close(fd[1]);
-   				close(fd[0]);
-				execv(s_from, args_from);
-			}
-			else{
-				dup2(fd[0], STDIN_FILENO);
-    			close(fd[1]);
-   				close(fd[0]);
-				execv(s_to, args_to);
-			}
-			exit(1);
-		}
-		exec = true;
-	return 1; 
 }
 
 
@@ -200,6 +149,11 @@ int run_all_pipes(bool background){
 	int fd[2];
 	int inp = 0;
 	int outp;
+	if(tab.input_re){
+		auto in = open(tab.input_file, O_RDONLY);
+		dup2(in,STDIN_FILENO);
+		close(in);
+	}
 	for(int i = 0; i<n; ++i){
 		//std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
 		if(pipe(fd) == -1){
@@ -225,6 +179,16 @@ int run_all_pipes(bool background){
 			
 		inp = fd[0];
 	}
+	if(tab.output_re==1){
+		outp = open(tab.output_file, O_WRONLY|O_CREAT, 0777);
+		dup2(outp, STDOUT_FILENO);
+		close(outp);
+	}
+	if(tab.output_re==2){
+		outp = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
+		dup2(outp, STDOUT_FILENO);
+		close(outp);
+	}
 	if (inp != 0){
     	dup2 (inp, 0);
 		execv(s_to[n-1], args_to[n-1]);
@@ -248,6 +212,21 @@ int run_word(char* w, char** args, bool background)
 
 			if (pid == 0)
 			{
+				if(tab.input_re){
+					auto in = open(tab.input_file, O_RDONLY);
+					dup2(in,STDIN_FILENO);
+					close(in);
+				}
+				if(tab.output_re==1){
+					auto out = open(tab.output_file, O_WRONLY|O_CREAT, 0777);
+					dup2(out,STDOUT_FILENO);
+					close(out);
+				}
+				if(tab.output_re==2){
+					auto out = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
+					dup2(out,STDOUT_FILENO);
+					close(out);
+				}
 				execv(s, args);
 			}
 			else if(!background){
