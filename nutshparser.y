@@ -23,7 +23,9 @@ void yyerror(char* e) {
 	yyparse();
 }
 
-int run_cd(char* dir = getenv("HOME"));
+
+int run_cd();
+int run_cd(char* dir);
 int add_word(char* w, std::vector<char*>* args);
 int run_word(char* w, char** args, bool background);
 int run_printenv();
@@ -88,7 +90,10 @@ args_list:
 	| args_list WORD {$$=$1; $$->push_back($2);}
 %%
 
-
+int run_cd(){
+	chdir(getenv("HOME"));
+	return 1;
+}
 int run_cd(char* dir){
 	chdir(dir);
 	return 1;

@@ -51,16 +51,39 @@ void replaceAlias(char* text){
 %option noyywrap
 %x string_condition
 
-CHAR            [.A-Za-z0-9!\/_-][.A-Za-z0-9!\/_-]*
-ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -]*
+CHAR            [.A-Za-z0-9!:\/_-][.A-Za-z0-9!:\/_-]*
+ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -]*
 
 %%
 
+\$\{{ANYCHAR}+\} {
+	std::string y = std::string(yytext);
+	char* text = (char*) y.substr(y.find("${")+2, y.find('}')-2).c_str();
+	char* env = getenv(text);
+	if(env) {
+		std::string t = std::string(env);
+	    for ( int i = t.length() - 1; i >= 0; --i ){
+	     	unput( t[i] );
+		}
+    }
+}
+
+<string_condition>\$\{{ANYCHAR}+\} {
+	std::string y = std::string(yytext);
+	char* text = (char*) y.substr(y.find("${")+2, y.find('}')-2).c_str();
+	char* env = getenv(text);
+	if(env) {
+		std::string t = std::string(env);
+	    for ( int i = t.length() - 1; i >= 0; --i ){
+	     	unput( t[i] );
+		}
+    }
+}
 <string_condition>{ANYCHAR}+     { yylval.WORD = strdup(yytext); return WORD;}
 <string_condition>[\"]          {BEGIN(INITIAL);}
 
 
-[ ]		    { beginning = false; }
+" "		    { beginning = false; }
 <<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
 "| "		{ beginning = true; return PIPE;}
 \|			{ beginning = true; return PIPE;}
@@ -79,7 +102,6 @@ unalias		{return UNALIAS;}
 cd			{return CD;}
 "\n"		{ beginning = true; return NEWLINE;}
 [\"]        { BEGIN(string_condition); }
-\$\{{CHAR}+\}	{auto y = std::string(yytext); yylval.WORD = strdup(getenv(y.substr(y.find("${")+2, y.find('}')-2).c_str())); return WORD;}
 {CHAR}+		{
 	if(beginning && is_alias(yytext)) {
 		std::string t = aliasTable[std::string(yytext)]; 
