@@ -41,6 +41,11 @@ bool checkCycle(std::string key, std::string val)
 	return false;
 }
 
+bool beginning = true;
+
+void replaceAlias(char* text){
+	
+}
 %}
 %array
 %option noyywrap
@@ -55,8 +60,10 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 <string_condition>[\"]          {BEGIN(INITIAL);}
 
 
-[ ]		    { }
-\|			{return PIPE;}
+[ ]		    { beginning = false; }
+<<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
+"| "		{ beginning = true; return PIPE;}
+\|			{ beginning = true; return PIPE;}
 "&"			{return AMPERSAND;}
 \<			{return LEFTAB;}
 \>\>		{return DOUBLERIGHTAB;}
@@ -70,7 +77,16 @@ unsetenv	{return UNSETENV;}
 alias		{return ALIAS;}
 unalias		{return UNALIAS;}
 cd			{return CD;}
-"\n"		{return NEWLINE;}
+"\n"		{ beginning = true; return NEWLINE;}
 [\"]        { BEGIN(string_condition); }
 \$\{{CHAR}+\}	{auto y = std::string(yytext); yylval.WORD = strdup(getenv(y.substr(y.find("${")+2, y.find('}')-2).c_str())); return WORD;}
-{CHAR}+		{yylval.WORD = strdup(yytext); return WORD;}
+{CHAR}+		{
+	if(beginning && is_alias(yytext)) {
+		std::string t = aliasTable[std::string(yytext)]; 
+	    for ( int i = t.length() - 1; i >= 0; --i ){
+	     	unput( t[i] );
+		}
+    } else {
+		yylval.WORD = strdup(yytext); return WORD;
+	}
+}

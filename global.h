@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <string.h>
 #include <utility>
 #define DEFAULT "\x1B[0m"
 #define BLACK 	"\x1B[30m"
@@ -56,5 +57,9 @@ struct CommandTable{
 };
 
 int run_word(char* w, char** args, bool background);
+
+bool is_alias(char* str);
+
+char* get_alias(char* str);
 
 #endif

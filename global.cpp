@@ -22,3 +22,16 @@ void updatePath(){
 		path_array.push_back((std::string) p.substr(0,p.find(delimiter)));
 	}
 }
+
+bool is_alias(char* str){
+	if(aliasTable.find(std::string(str))==aliasTable.end()){
+		return false;
+	}
+	return true;
+}
+
+char* get_alias(char* str){
+	char* s = new char[100];
+	strcpy(s, aliasTable[std::string(str)].c_str());
+	return s;
+}
