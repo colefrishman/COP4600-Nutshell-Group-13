@@ -3,6 +3,9 @@
 #include "nutshparser.tab.h"
 #include <string.h>
 #include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include "global.h"
 
 std::map<std::string, std::string> nestedAliases;
@@ -87,6 +90,7 @@ ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9
 <<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
 "| "		{ beginning = true; return PIPE;}
 \|			{ beginning = true; return PIPE;}
+" |"		{ beginning = true; return PIPE;}
 "&"			{return AMPERSAND;}
 \<			{return LEFTAB;}
 \>\>		{return DOUBLERIGHTAB;}
@@ -102,6 +106,40 @@ unalias		{return UNALIAS;}
 cd			{return CD;}
 "\n"		{ beginning = true; return NEWLINE;}
 [\"]        { BEGIN(string_condition); }
+~{CHAR}* {
+	std::string y = std::string(yytext);
+	std::string after;
+	std::string t;
+	auto user_info = getpwnam("");
+	if(y.size() == 1){
+		t = std::string(getenv("HOME"));
+	}
+	else if(y.find('/')==std::string::npos){
+		after = y.substr(1);
+		user_info = getpwnam(after.c_str());
+		if(user_info){
+			t = std::string(user_info->pw_dir);
+		}
+	}
+	else {
+		after = y.substr(1);
+		std::string user = after.substr(0, after.find('/'));
+		std::string path2 = after.substr(after.find('/'));
+		user_info = getpwnam(user.c_str());
+		if(user_info){
+			t = std::string(user_info->pw_dir) + path2;
+		}
+	}
+
+	if(t.find('~')!=std::string::npos){
+		
+	}
+	else if(t!="") {
+	    for ( int i = t.length() - 1; i >= 0; --i ){
+	     	unput( t[i] );
+		}
+    }
+}
 {CHAR}+		{
 	if(beginning && is_alias(yytext)) {
 		std::string t = aliasTable[std::string(yytext)]; 
