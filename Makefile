@@ -11,7 +11,7 @@ flex-config:
 	flex nutshscanner.l
 
 nutshell: 
-	$(GPP) nutshell.cpp global.cpp nutshparser.tab.c lex.yy.c -o nutshell
+	$(GPP) nutshell.cpp global.cpp nutshparser.tab.c lex.yy.c -o nutshell -fno-stack-protector
 
 clean:
 	rm nutshparser.tab.c nutshparser.tab.h lex.yy.c nutshell
