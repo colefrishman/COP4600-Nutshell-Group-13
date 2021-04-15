@@ -86,24 +86,24 @@ ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9
 <string_condition>[\"]          {BEGIN(INITIAL);}
 
 
-" "		    { beginning = false; }
-<<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
 "| "		{ beginning = true; return PIPE;}
 \|			{ beginning = true; return PIPE;}
 " |"		{ beginning = true; return PIPE;}
+" "		    { beginning = false; }
+<<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
+"2>&1"		{return ERRTOOUT;}
 "&"			{return AMPERSAND;}
 \<			{return LEFTAB;}
 \>\>		{return DOUBLERIGHTAB;}
 \>			{return RIGHTAB;}
-"2>&1"		{return ERRTOOUT;}
 "2>"		{return ERRTO;}
-bye			{exit(1); return 0;}
-setenv		{return SETENV;}
-printenv	{return PRINTENV;}
-unsetenv	{return UNSETENV;}
-alias		{return ALIAS;}
-unalias		{return UNALIAS;}
-cd			{return CD;}
+bye			{if(beginning){exit(1);} else {yylval.WORD = strdup(yytext); return WORD;} }
+setenv		{if(beginning){return SETENV;} else {yylval.WORD = strdup(yytext); return WORD;} }
+printenv	{if(beginning){return PRINTENV;} else { yylval.WORD = strdup(yytext); return WORD;} }
+unsetenv	{if(beginning){return UNSETENV;} else { yylval.WORD = strdup(yytext); return WORD;} }
+alias		{if(beginning){return ALIAS;} else { yylval.WORD = strdup(yytext); return WORD;} }
+unalias		{if(beginning){return UNALIAS;} else { yylval.WORD = strdup(yytext); return WORD;} }
+cd			{if(beginning){return CD;} else { yylval.WORD = strdup(yytext); return WORD;} }
 "\n"		{ beginning = true; return NEWLINE;}
 [\"]        { BEGIN(string_condition); }
 ~{CHAR}* {
