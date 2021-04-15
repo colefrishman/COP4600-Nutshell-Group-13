@@ -372,13 +372,11 @@ int run_alias(char* name, char* val){
 		}
 		else if (aliasTable[it->first] == std::string(name) || nestedAliases[it->first] == std::string(name))
 		{
-			std::cout << "entered" << std::endl;
 			nestedAliases[it->first] = std::string(val);
 			setNestedVal(it->first);
 		}
 	}
 	
-	std::cout << "Nested Aliases:" << std::endl;
 	for (auto iter = nestedAliases.begin(); iter != nestedAliases.end(); ++iter)
 	{
 		if (std::string(name) == iter->first && !nestedAliases[iter->first].empty())
