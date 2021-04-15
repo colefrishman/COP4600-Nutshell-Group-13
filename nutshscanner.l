@@ -55,7 +55,7 @@ void replaceAlias(char* text){
 %x string_condition
 
 CHAR            [.A-Za-z0-9!:\/_-][.A-Za-z0-9!:\/_-]*
-ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -]*
+ANYCHAR            [)(}{><*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(}{><*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -]*
 
 %%
 
@@ -86,6 +86,7 @@ ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9
 <string_condition>[\"]          {BEGIN(INITIAL);}
 
 
+[\"]        { BEGIN(string_condition); }
 "| "		{ beginning = true; return PIPE;}
 \|			{ beginning = true; return PIPE;}
 " |"		{ beginning = true; return PIPE;}
@@ -93,9 +94,9 @@ ANYCHAR            [)(}{*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`:;,\.a-zA-Z0-9
 <<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
 "2>&1"		{return ERRTOOUT;}
 "&"			{return AMPERSAND;}
-\<			{return LEFTAB;}
-\>\>		{return DOUBLERIGHTAB;}
-\>			{return RIGHTAB;}
+"<"			{return LEFTAB;}
+">>"		{return DOUBLERIGHTAB;}
+">"			{return RIGHTAB;}
 "2>"		{return ERRTO;}
 bye			{if(beginning){exit(1);} else {yylval.WORD = strdup(yytext); return WORD;} }
 setenv		{if(beginning){return SETENV;} else {yylval.WORD = strdup(yytext); return WORD;} }
@@ -105,7 +106,6 @@ alias		{if(beginning){return ALIAS;} else { yylval.WORD = strdup(yytext); return
 unalias		{if(beginning){return UNALIAS;} else { yylval.WORD = strdup(yytext); return WORD;} }
 cd			{if(beginning){return CD;} else { yylval.WORD = strdup(yytext); return WORD;} }
 "\n"		{ beginning = true; return NEWLINE;}
-[\"]        { BEGIN(string_condition); }
 ~{CHAR}* {
 	std::string y = std::string(yytext);
 	std::string after;
