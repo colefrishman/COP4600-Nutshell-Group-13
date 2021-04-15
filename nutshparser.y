@@ -218,12 +218,17 @@ int run_word(char* w, char** args, bool background)
 	struct stat st;
 	bool exec = false;
 	char s[100];
-	
+	bool exists = false;
+
+
 	for (int i=0; i<path_array.size(); ++i){ 
 		strcpy(s, path_array[i].c_str());
 		strcat(s, w);
-		if (stat((const char*) s, &st)==0)
-		{
+		if (stat((const char*) s, &st)==0){ exists=true; break;}
+	}
+	if(!exists){
+		return -1;
+	}
 			int pid = fork();
 
 			if (pid == 0)
@@ -258,9 +263,7 @@ int run_word(char* w, char** args, bool background)
     			waitpid(pid, &status, 0);
 			}
 			exec = true;
-			break;
-		}
-	}
+		
 	return 1; 
 }
 
@@ -286,6 +289,7 @@ int run_printenv(){
 
 int run_setenv(char* var, char* val){
 	setenv(var, val, 1);
+	updatePath();
 	return 1;
 }
 

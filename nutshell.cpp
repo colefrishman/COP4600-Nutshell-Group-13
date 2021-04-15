@@ -30,6 +30,7 @@ int main() {
 	tab.input_re = 0;
 	tab.output_re = 0;
 	tab.err_re = 0;
+	updatePath();
 
 	while(1){
 

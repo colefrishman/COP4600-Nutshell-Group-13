@@ -58,6 +58,8 @@ struct CommandTable{
 
 int run_word(char* w, char** args, bool background);
 
+std::string replaceTilde(std::string y);
+
 bool is_alias(char* str);
 
 char* get_alias(char* str);
