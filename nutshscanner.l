@@ -10,6 +10,8 @@
 #include <fnmatch.h>
 #include "global.h"
 
+extern int done;
+
 std::map<std::string, std::string> nestedAliases;
 std::map<std::string, std::string> aliasTable;
 std::string decipherAlias(std::string aliasText){
@@ -93,7 +95,7 @@ ANYCHAR            [)(}{><*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(}{><*&%$#@!`:;,\.a-z
 \|			{ beginning = true; return PIPE;}
 " |"		{ beginning = true; return PIPE;}
 " "		    { beginning = false; }
-<<EOF>>		{std::cout<<std::endl; exit(1); return 0;}
+<<EOF>>		{done=true; return NEWLINE; return 0;}
 "2>&1"		{return ERRTOOUT;}
 "&"			{return AMPERSAND;}
 "<"			{return LEFTAB;}
@@ -158,7 +160,7 @@ cd			{if(beginning){return CD;} else { yylval.WORD = strdup(yytext); return WORD
 		for(unsigned int i=0;i<globlist.gl_pathc;++i) {
 			t=t+globlist.gl_pathv[i]+" ";
 		}
-		
+
 		for ( int i = t.length() - 1; i >= 0; --i ){
 	     	unput( t[i] );
 		}

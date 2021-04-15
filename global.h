@@ -36,7 +36,6 @@ void updatePath();
 
 int run_all_pipes(bool background);
 
-
 struct CommandTable{
 	char* name[100];
 	int argnum[100];

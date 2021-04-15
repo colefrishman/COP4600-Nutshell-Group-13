@@ -23,9 +23,13 @@ string get_intro(){
 
 extern CommandTable tab;
 
-std::vector<std::string> path_array;
+int done;
 
+std::vector<std::string> path_array;
 int main() {
+
+	done = false;
+
 	tab.numPipes=0;
 	tab.input_re = 0;
 	tab.output_re = 0;
@@ -34,6 +38,7 @@ int main() {
 
 	while(1){
 
+		if(done){cout<<endl; exit(1);}
 		cout << get_intro();
 		
 		yyparse();
