@@ -3,7 +3,7 @@
 printenv alias pipe
 check path checker
 check env expansion
-wildcard matching
+check wildcard matching
 check tilde expansion
 keep path and home
 cd being wrong

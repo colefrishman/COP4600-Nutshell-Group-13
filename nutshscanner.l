@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <glob.h>
+#include <fnmatch.h>
 #include "global.h"
 
 std::map<std::string, std::string> nestedAliases;
@@ -54,7 +56,7 @@ void replaceAlias(char* text){
 %option noyywrap
 %x string_condition
 
-CHAR            [.A-Za-z0-9!:\/_-][.A-Za-z0-9!:\/_-]*
+CHAR            [*.A-Za-z0-9!?:\/_-][*.A-Za-z0-9!?:\/_-]*
 ANYCHAR            [)(}{><*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -][)(}{><*&%$#@!`:;,\.a-zA-Z0-9'/*_=~ -]*
 
 %%
@@ -141,12 +143,27 @@ cd			{if(beginning){return CD;} else { yylval.WORD = strdup(yytext); return WORD
     }
 }
 {CHAR}+		{
+	glob_t globlist;
+	std::string text = std::string(yytext);
+
 	if(beginning && is_alias(yytext)) {
 		std::string t = aliasTable[std::string(yytext)]; 
 	    for ( int i = t.length() - 1; i >= 0; --i ){
 	     	unput( t[i] );
 		}
-    } else {
+    }
+	else if((text.find('*')!=std::string::npos || text.find('?')!=std::string::npos)
+	 	&& (glob((text).c_str(), GLOB_TILDE, NULL, &globlist) == 0)){
+		std::string t = "";
+		for(unsigned int i=0;i<globlist.gl_pathc;++i) {
+			t=t+globlist.gl_pathv[i]+" ";
+		}
+		
+		for ( int i = t.length() - 1; i >= 0; --i ){
+	     	unput( t[i] );
+		}
+	}
+	else {
 		yylval.WORD = strdup(yytext); return WORD;
 	}
 }
