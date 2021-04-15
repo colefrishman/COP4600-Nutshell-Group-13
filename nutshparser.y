@@ -19,7 +19,7 @@ int yylex(void); // Defined in lex.yy.c
 int yyparse(); // Need this definition so that yyerror can call it
 
 void yyerror(char* e) {
-	printf("Error: %s\n", e);
+	std::cout << RED << "Error: "<< DEFAULT << e << std::endl;
 	yyparse();
 }
 
@@ -305,7 +305,7 @@ int run_alias(char* name, char* val){
 	
 	if (strcmp(name, val) == 0)
 	{
-		std::cout << "Error: alias cannot equal command" << std:: endl;
+		std::cout << RED "Error: " << "alias cannot equal command" << std:: endl;
 		return 1;
 	}
 	
@@ -313,7 +313,7 @@ int run_alias(char* name, char* val){
 	//if nested key is val 
 	if (checkCycle(name, val))
 	{
-		std::cout << "Error: Would create long cycle infinite loop" << std::endl;
+		std::cout << RED "Error: " << "Would create long cycle infinite loop" << std::endl;
 		return 1;
 	}
 	
@@ -322,7 +322,7 @@ int run_alias(char* name, char* val){
 	{
 		if (std::string(name) == it->second && std::string(val) == it->first)
 		{
-			std::cout << "Error: cannot create vice versa alias" << std::endl;
+			std::cout << RED "Error: " << "cannot create vice versa alias" << std::endl;
 			return 1;
 		}
 		else if (aliasTable[it->first] == std::string(name) || nestedAliases[it->first] == std::string(name))
@@ -365,6 +365,14 @@ int run_unalias(char* a){
 }
 
 int run_unsetenv(char* var){
-	unsetenv(var);
+	if(strcmp(var,"PATH")==0){
+		std::cout<<RED<<"ERROR: "<<DEFAULT<<"cannot unsetenv PATH." << std::endl;
+	}
+	else if(strcmp(var,"HOME")==1){
+		std::cout<<RED<<"ERROR: "<<DEFAULT<<"cannot unsetenv HOME." << std::endl;
+	}
+	else{
+		unsetenv(var);
+	}
 	return 1;
 }

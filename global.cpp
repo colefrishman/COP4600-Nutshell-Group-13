@@ -12,25 +12,23 @@ void updatePath(){
 	if(p.find(".:")==std::string::npos){
 		p = ".:"+p;
 	}
-
 	char delimiter = ':';
 	while(p[p.size()-1] == delimiter){ p = p.substr(0,p.size()-2); }
 	while(p[0] == delimiter){ p = p.substr(1); }
 
-
 	while((p.find(delimiter)>=0 && p.find(delimiter)<p.size())){
 		std::string token = p.substr(0,p.find(delimiter));
 		if(token!="."){
-			path_array.push_back('/'+replaceTilde(token)+'/');
+			path_array.push_back(replaceTilde(token)+'/');
 		}
 		else{
 			path_array.push_back("./");
 		}
-		p = p.substr(p.find(delimiter)+2);
+		p = p.substr(p.find(delimiter)+1);
 	}
 	if(p.size()>0){
 		std::string token = p.substr(0,p.find(delimiter));
-		path_array.push_back('/' + replaceTilde(token)+'/');
+		path_array.push_back(replaceTilde(token)+'/');
 	}
 
 	std::string path_string = "";
@@ -68,6 +66,7 @@ std::string replaceTilde(std::string y){
 			t = std::string(user_info->pw_dir) + path2;
 		}
 	}
+
 	return t;
 }
 
