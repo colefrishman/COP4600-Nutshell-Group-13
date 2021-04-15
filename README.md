@@ -29,15 +29,15 @@ remove print statements
 - Environment Variable Expansion
 - Alias Expansion
 - Tilde Expansion
+- Wildcard Matching
 
 ***Features NOT Implemented***
 
-- Wildcard Matching
 - File Name Completion
 
 ***
 
 ***Distribution of Work***
 
-As a group, we worked on all built-in, bon-built-in commands with and without arguments, and environment variable expansion together. Cole worked on I/O redirection, pipes, the combination of redirection and pipes, running commands in the background, and tilde expansion. Daniel worked on alias expansion and attempted to complete wildcard matching, but did not succeed.
+As a group, we worked on all built-in, bon-built-in commands with and without arguments, and environment variable expansion together. Cole worked on I/O redirection, pipes, the combination of redirection and pipes, running commands in the background, and tilde expansion. Daniel worked on alias expansion and attempted to complete wildcard matching, but did not succeed. Cole took over wildcard matching and was able to complete it.
 
