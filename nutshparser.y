@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
+char* printenv_text = "printenv";
+char* alias_text = "alias";
 //#define YYSTYPE char*
 
 int yylex(void); // Defined in lex.yy.c
@@ -71,15 +73,15 @@ pipe_list:
 	| pipe_list RIGHTAB WORD {$$ = $1; tab.output_file = $3; tab.output_re = 1;}
 	| pipe_list LEFTAB WORD {$$ = $1; tab.input_file = $3; tab.input_re = 1;}
 	| pipe_list PIPE WORD args_list {$$ = add_pipe($1, add_word($3, $4));}
+	| ALIAS	{$$ = add_word("alias", new std::vector<char*>);}
+	| PRINTENV	{$$ = add_word("printenv", new std::vector<char*>);}
 	| WORD args_list {$$ = add_word($1, $2);}
 	
 command:	/* empty */
 	ALIAS WORD WORD 		{$$ = -1; run_alias($2, $3);}
-	| ALIAS 				{$$ = -1; run_alias();}
 	| UNALIAS WORD 			{$$ = -1; run_unalias($2);}
 	| SETENV WORD WORD 		{$$ = -1; run_setenv($2, $3);}
 	| UNSETENV WORD 		{$$ = -1; run_unsetenv($2);}
-    | PRINTENV 				{$$ = -1; run_printenv();}
 	| CD WORD 				{$$ = -1; run_cd($2);}
 	| CD 					{$$ = -1; run_cd();}
 
@@ -124,6 +126,7 @@ int run_all_pipes(bool background){
 		args_to[i] = tab.args[tab.pipes[i].second];
 	}
 
+	bool exists;
 	struct stat st;
 	bool exec = false;
 	char s_from[100][100];
@@ -134,6 +137,7 @@ int run_all_pipes(bool background){
 			strcpy(s_from[j], path_array[i].c_str());
 			strcat(s_from[j], w_from[j]);
 			if (stat((const char*) s_from[j], &st)==0) { break; }
+			if (strcmp(w_from[j],printenv_text)==0 || strcmp(w_from[j],alias_text)==0){break;}
 		}
 	}
 	for(int j=0; j<n; ++j){
@@ -165,6 +169,7 @@ int run_all_pipes(bool background){
 		//std::cout << "here " << s_from[i] << " to " << s_to[i] << " : " << i << "/" << n << std::endl;
 		if(pipe(fd) == -1){
 			std::cout << "pipe error" << std::endl;
+			return -1;
 		}
 		outp = fd[1];
 		pid = fork();
@@ -179,7 +184,17 @@ int run_all_pipes(bool background){
    				close(outp);
 			}
 
-			execv(s_from[i], args_from[i]);
+			if(strcmp(w_from[i], printenv_text)==0){
+				run_printenv();
+				exit(1);
+			}
+			else if(strcmp(w_from[i], alias_text)==0){
+				run_alias();
+				exit(1);
+			}
+			else{
+				execv(s_from[i], args_from[i]);
+			}
 		}
 
 		close(fd[1]);
@@ -207,7 +222,17 @@ int run_all_pipes(bool background){
 	}
 	if (inp != 0){
     	dup2 (inp, 0);
-		execv(s_to[n-1], args_to[n-1]);
+		if(strcmp(w_to[n-1], printenv_text)==0){
+			run_printenv();
+			exit(1);
+		}
+		else if(strcmp(w_to[n-1], alias_text)==0){
+			run_alias();
+			exit(1);
+		}
+		else{
+			execv(s_to[n-1], args_to[n-1]);
+		}
 	}
 	return 1; 
 }
@@ -226,7 +251,9 @@ int run_word(char* w, char** args, bool background)
 		strcat(s, w);
 		if (stat((const char*) s, &st)==0){ exists=true; break;}
 	}
+	exists = exists || (strcmp(w, printenv_text)==0) || (strcmp(w, alias_text)==0);
 	if(!exists){
+		std::cout<<"Command "<<w<<" not found"<<std::endl;
 		return -1;
 	}
 			int pid = fork();
@@ -256,7 +283,18 @@ int run_word(char* w, char** args, bool background)
 					dup2(outp, STDERR_FILENO);
 					close(outp);
 				}
-				execv(s, args);
+
+				if(strcmp(w, printenv_text)==0){
+					run_printenv();
+					exit(1);
+				}
+				else if(strcmp(w, alias_text)==0){
+					run_alias();
+					exit(1);
+				}
+				else{
+					execv(s, args);
+				}
 			}
 			else if(!background){
 				int status;
