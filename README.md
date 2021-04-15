@@ -9,3 +9,5 @@ cd being wrong
 ban io redir in pipes
 check files being opened from with io redir
 make things that aren't ok return error
+can't find current dir??
+remove print statements

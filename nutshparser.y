@@ -126,7 +126,7 @@ int run_all_pipes(bool background){
 		args_to[i] = tab.args[tab.pipes[i].second];
 	}
 
-	bool exists;
+	bool exists =true;
 	struct stat st;
 	bool exec = false;
 	char s_from[100][100];
@@ -138,6 +138,7 @@ int run_all_pipes(bool background){
 			strcat(s_from[j], w_from[j]);
 			if (stat((const char*) s_from[j], &st)==0) { break; }
 			if (strcmp(w_from[j],printenv_text)==0 || strcmp(w_from[j],alias_text)==0){break;}
+			if(i==path_array.size()-1){exists=false;}
 		}
 	}
 	for(int j=0; j<n; ++j){
@@ -145,7 +146,13 @@ int run_all_pipes(bool background){
 			strcpy(s_to[j], path_array[i].c_str());
 			strcat(s_to[j], w_to[j]);
 			if (stat((const char*) s_to[j], &st)==0) { break; }
+			if(i==path_array.size()-1){exists=false;}
 		}
+	}
+
+	if(!exists){
+		std::cout<<RED<<"Error: "<< DEFAULT << "One or more commands not found"<<std::endl;
+		return -1;
 	}
 
 	pid_t pid = fork();
@@ -253,7 +260,7 @@ int run_word(char* w, char** args, bool background)
 	}
 	exists = exists || (strcmp(w, printenv_text)==0) || (strcmp(w, alias_text)==0);
 	if(!exists){
-		std::cout<<"Command "<<w<<" not found"<<std::endl;
+		std::cout<<RED<<"Error: "<<DEFAULT<<"Command "<<w<<" not found"<<std::endl;
 		return -1;
 	}
 			int pid = fork();

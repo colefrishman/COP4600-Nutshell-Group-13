@@ -41,7 +41,13 @@ int main() {
 		if(done){cout<<endl; exit(1);}
 		cout << get_intro();
 		
-		yyparse();
+		try{
+			yyparse();
+		}
+		catch(const std::exception& e){
+			cout<<e.what()<<endl;
+		}
+		
 		if(tab.idx>0){
 			int pipeNo = 0;
 			if(tab.numPipes==0){
