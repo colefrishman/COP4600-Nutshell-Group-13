@@ -109,7 +109,7 @@ unsetenv	{if(beginning){return UNSETENV;} else { yylval.WORD = strdup(yytext); r
 alias		{if(beginning){return ALIAS;} else { yylval.WORD = strdup(yytext); return WORD;} }
 unalias		{if(beginning){return UNALIAS;} else { yylval.WORD = strdup(yytext); return WORD;} }
 cd			{if(beginning){return CD;} else { yylval.WORD = strdup(yytext); return WORD;} }
-"\n"		{ beginning = true; return NEWLINE;}
+[\n\r]		{ beginning = true; return NEWLINE;}
 ~{CHAR}* {
 	std::string y = std::string(yytext);
 	std::string after;

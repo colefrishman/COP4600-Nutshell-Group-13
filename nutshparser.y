@@ -168,6 +168,10 @@ int run_all_pipes(bool background){
 	int inp = 0;
 	int outp;
 	if(tab.input_re){
+		if(access(tab.input_file, R_OK)!=0){
+			std::cout<<RED<<"Error: "<< DEFAULT << "file " << tab.input_file << " not found;" <<std::endl;
+			return -1;
+		}
 		auto in = open(tab.input_file, O_RDONLY);
 		dup2(in,STDIN_FILENO);
 		close(in);
@@ -209,7 +213,7 @@ int run_all_pipes(bool background){
 		inp = fd[0];
 	}
 	if(tab.output_re==1){
-		outp = open(tab.output_file, O_WRONLY|O_CREAT, 0777);
+		outp = open(tab.output_file, O_WRONLY|O_CREAT|O_TRUNC, 0777);
 		dup2(outp, STDOUT_FILENO);
 		close(outp);
 	}
@@ -223,7 +227,7 @@ int run_all_pipes(bool background){
 		close(outp);
 	}
 	if(tab.err_re==2){
-		outp = open(tab.output_file, O_WRONLY|O_APPEND|O_CREAT, 0777);
+		outp = open(tab.output_file, O_WRONLY|O_TRUNC|O_CREAT, 0777);
 		dup2(outp, STDERR_FILENO);
 		close(outp);
 	}
@@ -268,6 +272,10 @@ int run_word(char* w, char** args, bool background)
 			if (pid == 0)
 			{
 				if(tab.input_re){
+					if(access(tab.input_file, R_OK)!=0){
+						std::cout<<RED<<"Error: "<< DEFAULT << "file " << tab.input_file << " not found;" <<std::endl;
+						return -1;
+					}
 					auto in = open(tab.input_file, O_RDONLY);
 					dup2(in,STDIN_FILENO);
 					close(in);
@@ -391,7 +399,7 @@ int run_alias(char* name, char* val){
 		
 		if (!nestedAliases[iter->first].empty())
 		{
-			std::cout << iter->first << " = " << iter->second << std::endl;
+			//std::cout << iter->first << " = " << iter->second << std::endl;
 		}
 	}
 
@@ -411,7 +419,7 @@ int run_unsetenv(char* var){
 	if(strcmp(var,"PATH")==0){
 		std::cout<<RED<<"ERROR: "<<DEFAULT<<"cannot unsetenv PATH." << std::endl;
 	}
-	else if(strcmp(var,"HOME")==1){
+	else if(strcmp(var,"HOME")==0){
 		std::cout<<RED<<"ERROR: "<<DEFAULT<<"cannot unsetenv HOME." << std::endl;
 	}
 	else{
