@@ -4,17 +4,9 @@
 
 ---
 
-check printenv alias pipe
-check path checker
-check env expansion
-check wildcard matching
-check tilde expansion
-cd being wrong
-ban io redir in pipes
-make things that aren't ok return error
-can't find current dir??
+***Features NOT Implemented***
 
----
+- File Name Completion
 
 ***Features Implemented***
 
@@ -29,11 +21,7 @@ can't find current dir??
 - Tilde Expansion
 - Wildcard Matching
 
-***Features NOT Implemented***
-
-- File Name Completion
-
-***
+---
 
 ***Distribution of Work***
 
